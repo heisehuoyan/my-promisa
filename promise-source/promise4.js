@@ -104,7 +104,16 @@ class Promise {
       reject(error);
     }
   }
+  // then中的参数是可选的
   then(onFulfilled, onRejected) {
+    // 值的穿透
+    onFulfilled = typeof onFulfilled == "function" ? onFulfilled : (v) => v;
+    onRejected =
+      typeof onRejected == "function"
+        ? onRejected
+        : (err) => {
+            throw err;
+          };
     let promise2 = new Promise((resolve, reject) => {
       // 把之前的代码全部放在新的promise里面，因为promise执行器是立即执行的
       // 这样方便上一个then的返回值传递到下一个then中
