@@ -177,6 +177,7 @@ class Promise {
     return this.then(null, errorFn);
   }
   static all = function (promises) {
+    // 所有成功才成功，一旦失败就失败
     return new Promise((resolve, reject) => {
       let result = [];
       let times = 0;
@@ -189,13 +190,26 @@ class Promise {
       for (let i = 0; i < promises.length; i++) {
         // 并发 多个请求一起执行的
         let p = promises[i];
-        console.log(p && typeof p.then === "function");
         if (p && typeof p.then === "function") {
           p.then((data) => {
             processSuccess(i, data);
           }, reject); // 如果其中某一个promise失败了 直接执行失败即可
         } else {
           processSuccess(i, p);
+        }
+      }
+    });
+  };
+  static race = function (promises) {
+    // 有一个成功或失败就采用他的结果，谁快用谁的，赛跑，超时处理，
+    // race 方法如果其中一个完成了，另外一个还在执行，只是不用他的结果
+    return new Promise((resolve, reject) => {
+      for (let i = 0; i < promises.length; i++) {
+        let p = promises[i];
+        if (p && typeof p.then === "function") {
+          p.then(resolve, reject); // 一旦成功或失败则直接停止
+        } else {
+          resolve(p);
         }
       }
     });
